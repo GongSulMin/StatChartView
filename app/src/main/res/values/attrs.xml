@@ -3,4 +3,8 @@
     <declare-styleable name="StatCharView">
         <attr name="point_color" format="color"/>
     </declare-styleable>
+    
+    <declare-styleable name="PolygonView">
+        <attr name="polygon_point_count" format="integer"></attr>
+    </declare-styleable>
 </resources>
