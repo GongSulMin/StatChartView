@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="StatCharView">
+    <declare-styleable name="PathPointTestView">
         <attr name="point_color" format="color"/>
     </declare-styleable>
     
-    <declare-styleable name="PolygonView">
+    <declare-styleable name="StatChartView">
         <attr name="polygon_point_count" format="integer"></attr>
     </declare-styleable>
 </resources>

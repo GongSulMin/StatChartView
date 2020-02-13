@@ -14,16 +14,14 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 
-class PolygonView @JvmOverloads constructor(
+class StatChartView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
-    var pointsCount: Int = 0
-
-    var startX = 20f * cos(0.0)
-    var startY = 20f * sin(0.0)
+    private var pointsCount: Int = 0
+    private var radius: Float = 300f
 
     private val circlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
@@ -39,9 +37,9 @@ class PolygonView @JvmOverloads constructor(
     val path = Path()
 
     init {
-        val obtainStyledAttributes = context.obtainStyledAttributes(attrs, R.styleable.PolygonView)
+        val obtainStyledAttributes = context.obtainStyledAttributes(attrs, R.styleable.StatChartView)
         obtainStyledAttributes.let {
-           pointsCount = it.getInt(R.styleable.PolygonView_polygon_point_count , 2)
+           pointsCount = it.getInt(R.styleable.StatChartView_polygon_point_count , 2)
         }
         obtainStyledAttributes.recycle()
     }
@@ -58,8 +56,6 @@ class PolygonView @JvmOverloads constructor(
         val centerX  = (width / 2).toFloat()
         val centerY = (height / 2).toFloat()
 
-
-
         for (j in 1 until 5) {
             val angle = 360f / (pointsCount + j)
             path.reset()
@@ -72,16 +68,17 @@ class PolygonView @JvmOverloads constructor(
                 val x1 = centerX + (j * 100f) * cos(startAngle1).toFloat()
                 val y1 = centerY + (j * 100f) * sin(startAngle1).toFloat()
 
-                path.moveTo(x , y)
-                path.lineTo(x1 , y1)
-                canvas.drawPath(path , pathPaint)
-
                 canvas.drawCircle(
                     x,
                     y,
                     10f,
                     circlePaint
                 )
+
+                path.moveTo(x , y)
+                path.lineTo(x1 , y1)
+                canvas.drawPath(path , pathPaint)
+
 
             }
 

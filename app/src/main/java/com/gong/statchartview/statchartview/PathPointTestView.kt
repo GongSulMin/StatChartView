@@ -7,7 +7,7 @@ import android.view.MotionEvent
 import android.view.View
 import com.gong.statchartview.R
 
-class StatCharView @JvmOverloads constructor(
+class PathPointTestView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
@@ -27,9 +27,9 @@ class StatCharView @JvmOverloads constructor(
     val points = arrayListOf<PointF>()
 
     init {
-        val obtainStyledAttributes = context.obtainStyledAttributes(attrs, R.styleable.StatCharView)
+        val obtainStyledAttributes = context.obtainStyledAttributes(attrs, R.styleable.PathPointTestView)
         paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = obtainStyledAttributes.getColor(R.styleable.StatCharView_point_color , Color.RED )
+            color = obtainStyledAttributes.getColor(R.styleable.PathPointTestView_point_color , Color.RED )
             strokeWidth = 10f
             style = Paint.Style.STROKE
         }
