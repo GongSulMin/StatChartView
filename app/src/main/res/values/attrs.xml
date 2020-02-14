@@ -5,6 +5,7 @@
     </declare-styleable>
     
     <declare-styleable name="StatChartView">
-        <attr name="polygon_point_count" format="integer"></attr>
+        <attr name="polygon_point_count" format="integer"/>
+        <attr name="polygon_radius" format="float"/>
     </declare-styleable>
 </resources>
