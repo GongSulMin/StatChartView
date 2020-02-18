@@ -3,22 +3,17 @@ package com.gong.statchartview.statchartview
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.*
-import android.transition.PatternPathMotion
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
-import android.view.animation.PathInterpolator
-import androidx.core.graphics.PathParser
-import androidx.core.graphics.PathSegment
-import androidx.core.view.animation.PathInterpolatorCompat
+import androidx.core.animation.addListener
 import com.gong.statchartview.R
 import com.gong.statchartview.statchartview.utils.MathUtils.degreeToRadians
 import com.gong.statchartview.statchartview.utils.MathUtils.getAngle
 import com.gong.statchartview.statchartview.utils.MathUtils.getCosX
 import com.gong.statchartview.statchartview.utils.MathUtils.getSinY
 import com.gong.statchartview.statchartview.utils.PathUtils.getPolygonPath
-import java.nio.file.PathMatcher
 import kotlin.math.cos
 
 /**
@@ -33,7 +28,6 @@ import kotlin.math.cos
 
 
 // TODO Width Height 값이 이상함
-// TODO Animation
 class StatChartView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
@@ -46,7 +40,6 @@ class StatChartView @JvmOverloads constructor(
 
     private var radius: Float = 300f
     private val pointsRadius: Float = 13f
-
 
     private var centerX: Float = (width / 2).toFloat()
     private var centerY: Float = (height / 2).toFloat()
@@ -71,15 +64,15 @@ class StatChartView @JvmOverloads constructor(
     private val statChartViewPointList = mutableListOf<StatChartViewPoints>()
     private val basePoint = mutableListOf<StatChartViewPoints>()
 
-    private val statChartView = StatChartViewPoints()
-    private var selectStatChartView = StatChartViewPoints()
-
     private val statDataList = mutableListOf<StatData>()
 
     private val pointF = PointF()
     private val path = Path()
     private val basePath = Path()
+    private val targetPath = Path()
     private val pathMeasure = PathMeasure()
+    private var pathAnimateValue = 0f
+    private var isPathAnimateEnd = true
 
     init {
 
@@ -119,16 +112,15 @@ class StatChartView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
 
-        if (statChartViewPointList.isNotEmpty()) {
-
             val startX =  getCosX(centerX , statChartViewPointList[0].radius , 0.0)
             val startY =  getSinY(centerY , statChartViewPointList[0].radius , 0.0)
 
             path.reset()
             basePath.reset()
+
             path.moveTo(
-                startX ,
-                startY
+                getCosX(centerX , radius * pathAnimateValue , 0.0) ,
+                getSinY(centerY , radius * pathAnimateValue  , 0.0)
             )
 
             basePath.moveTo(
@@ -140,7 +132,7 @@ class StatChartView @JvmOverloads constructor(
 
                 path.addPath(getPolygonPath(
                     path,
-                    statChartViewPointList[i].radius ,
+                    statChartViewPointList[i].radius * pathAnimateValue ,
                     pointsCount ,
                     i ,
                     centerX ,
@@ -156,33 +148,90 @@ class StatChartView @JvmOverloads constructor(
                     centerY
                 ))
 
-
                 canvas.drawCircle(
-                    statChartViewPointList[i].point.x,
-                    statChartViewPointList[i].point.y,
+                    (centerX + (statChartViewPointList[i].point.x - centerX) *  (pathAnimateValue)),
+                    (centerY + (statChartViewPointList[i].point.y - centerY) * (pathAnimateValue)),
                     pointsRadius,
                     circlePaint
                 )
 
             }
-
-            path.lineTo(
-                startX ,
-                startY
-            )
+//            path.lineTo(
+//                startX ,
+//                startY
+//            )
 
             basePath.lineTo(
                 startX ,
                 startY
             )
 
-            pathMeasure.setPath(path  , false)
+            path.close()
+            Log.e(TAG , "pathMeasure")
+            pathMeasure.setPath(path  , true)
             canvas.drawPath(path , pathPaint)
             canvas.drawPath(basePath , basePaint)
 
-        }
     }
 
+    fun setStatData(list: List<StatData>) {
+        statDataList.clear()
+        statDataList.addAll(list)
+        initStatList(list)
+        setAnimation()
+    }
+
+    private fun initStatList(statList: List<StatData>) {
+        statChartViewPointList.clear()
+        basePoint.clear()
+
+        pointsCount = statList.size
+
+        statList.forEach {
+            statChartViewPointList.add(StatChartViewPoints(radius = (radius * ((it.value) / 100f)).toFloat()))
+            basePoint.add(StatChartViewPoints(radius = radius))
+        }
+
+        for (i in 0 until statChartViewPointList.size) {
+            val x = getCosX(centerX , statChartViewPointList[i].radius , degreeToRadians(getAngle(pointsCount) * i))
+            val y = getSinY(centerY , statChartViewPointList[i].radius , degreeToRadians(getAngle(pointsCount) * i))
+
+            val baseX = getCosX(centerX , basePoint[i].radius , degreeToRadians(getAngle(pointsCount) * i))
+            val baseY = getSinY(centerY , basePoint[i].radius , degreeToRadians(getAngle(pointsCount) * i))
+
+            statChartViewPointList[i].point = PointF(x,y)
+            basePoint[i].point = PointF(x,y)
+        }
+
+    }
+
+    private fun setAnimation() {
+
+        ValueAnimator.ofFloat(0f , 1f).apply {
+            duration = 1500
+            addUpdateListener {
+                pathAnimateValue = it.animatedFraction
+                invalidate()
+            }
+            addListener(
+                onEnd = {
+                    isPathAnimateEnd = true
+                } ,
+                onStart =  {
+                    isPathAnimateEnd = false
+                }
+            )
+        }.start()
+
+    }
+
+    private fun getRadius(
+        touchX: Float ,
+        angle: Double
+    ): Float {
+        val radius = touchX / cos(angle).toFloat()
+        return radius
+    }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
 
@@ -199,7 +248,6 @@ class StatChartView @JvmOverloads constructor(
                             pointsRadius
                         )
                     }?.let { selectPoint ->
-                        selectStatChartView = selectPoint
                     }
 
                     statChartViewPointList[0].radius = 150f
@@ -220,44 +268,6 @@ class StatChartView @JvmOverloads constructor(
         return true
     }
 
-    fun setStatData(list: List<StatData>) {
-        statDataList.clear()
-        statDataList.addAll(list)
-        initStatList(list)
-        invalidate()
-    }
-
-    private fun initStatList(statList: List<StatData>) {
-        statChartViewPointList.clear()
-        basePoint.clear()
-
-        pointsCount = statList.size
-
-        statList.forEach {
-            statChartViewPointList.add(StatChartViewPoints(radius = (radius * ((it.value) / 100f)).toFloat()))
-            basePoint.add(StatChartViewPoints(radius = radius))
-        }
-
-
-        for (i in 0 until statChartViewPointList.size) {
-            val x = getCosX(centerX , statChartViewPointList[i].radius , degreeToRadians(getAngle(pointsCount) * i))
-            val y = getSinY(centerY , statChartViewPointList[i].radius , degreeToRadians(getAngle(pointsCount) * i))
-
-            val baseX = getCosX(centerX , basePoint[i].radius , degreeToRadians(getAngle(pointsCount) * i))
-            val baseY = getSinY(centerY , basePoint[i].radius , degreeToRadians(getAngle(pointsCount) * i))
-
-            statChartViewPointList[i].point = PointF(x,y)
-            basePoint[i].point = PointF(x,y)
-        }
-    }
-
-    private fun getRadius(
-        touchX: Float ,
-        angle: Double
-    ): Float {
-        val radius = touchX / cos(angle).toFloat()
-        return radius
-    }
 
     companion object {
         val STAT_MAX_POINT = 10
