@@ -3,6 +3,7 @@ package com.gong.statchartview.statchartview
 import android.graphics.PointF
 import android.util.Log
 
+// 내부적으로 쓰는 데이터
 data class StatChartViewPoints(
     var point: PointF = PointF(0f , 0f) ,
     var radius: Float = 300f

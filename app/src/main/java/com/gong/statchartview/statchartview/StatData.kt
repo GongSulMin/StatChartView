@@ -1,6 +1,7 @@
 package com.gong.statchartview.statchartview
 
-data class StatData(
+// 외부적으로 사람들이 보는 데이터
+data class  StatData(
     var label: String? = null ,
     var value: Double
 ) {
@@ -29,4 +30,12 @@ data class StatData(
         }
 
     }
-}
+
+ }
+
+//fun List<StatData>.toPoint(): List<StatChartViewPoints> {
+//
+//    return
+//
+//
+//}
