@@ -1,6 +1,8 @@
 package com.gong.statchartview.statchartview.utils
 
 import android.graphics.Path
+import android.util.Log
+import com.gong.statchartview.statchartview.StatChartViewPoints
 import com.gong.statchartview.statchartview.utils.MathUtils.degreeToRadians
 import com.gong.statchartview.statchartview.utils.MathUtils.getAngle
 import com.gong.statchartview.statchartview.utils.MathUtils.getCosX
@@ -24,6 +26,10 @@ object PathUtils  {
         val cosX =   getCosX(centerX , radius , startAngle)
         val sinY =  getSinY(centerY , radius , startAngle)
 
+        Log.e("angle", " ${angle}: " )
+        Log.e("anglesides", " ${sides} " )
+        Log.e("anglestartangle", "${startAngle}: ")
+
         path.lineTo(
             cosX ,
             sinY
@@ -31,5 +37,20 @@ object PathUtils  {
 
         return path
     }
+
+}
+
+fun List<StatChartViewPoints>.toPath(): Path {
+    val path = Path()
+
+    path.moveTo(this.first().point.x , this.first().point.y)
+
+    for (i in this.indices) {
+        path.lineTo(this[i].point.x , this[i].point.y)
+    }
+
+    path.close()
+
+    return path
 
 }

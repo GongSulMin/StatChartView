@@ -1,5 +1,6 @@
 package com.gong.statchartview.statchartview.utils
 
+import android.graphics.PointF
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -18,7 +19,8 @@ object MathUtils  {
         radius: Float ,
         angle: Double
     ): Float {
-        return centerX + (radius) * cos(angle).toFloat()
+
+        return centerX +  (radius) * cos(angle).toFloat()
     }
 
     fun getSinY(
@@ -26,6 +28,22 @@ object MathUtils  {
         radius: Float ,
         angle: Double
     ): Float {
-        return centerY + (radius) * sin(angle).toFloat()
+
+        return  centerY + (radius) * sin(angle).toFloat()
+    }
+
+    fun getPoint(radius: Float , angle: Double): PointF {
+        val x = getCosX(
+            540.0f,
+            radius,
+            angle
+        )
+
+        val y = getSinY(
+            768.0f,
+            radius,
+            angle
+        )
+        return PointF(x , y)
     }
 }
