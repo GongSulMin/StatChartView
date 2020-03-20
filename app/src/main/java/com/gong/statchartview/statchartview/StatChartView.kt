@@ -151,151 +151,14 @@ class StatChartView @JvmOverloads constructor(
 
 
     override fun onDraw(canvas: Canvas) {
-        Log.e(TAG, "onDraw: " )
         this.canvas = canvas
         statChartRenderer.draw()
-//        val startX = getCosX(centerX, statChartViewPointList[0].radius, 0.0)
-//        val startY = getSinY(centerY, statChartViewPointList[0].radius, 0.0)
-//
-//        path.reset()
-//        basePath.reset()
-//
-//        val pathTest = statChartViewPointList.toPath()
-//
-//
-////        path.moveTo(
-////            getCosX(centerX, radius , 0.0),
-////            getSinY(centerY, radius , 0.0)
-////        )
-//
-//        basePath.moveTo(
-//            startX,
-//            startY
-//        )
-//
-//        // 여기까지 역할은 페인트를 포함해서 랜더링 클래스에서 보내준 데이터를 통해 패스값을 구하는게 뷰의 역할인데....
-//        for (i in 0 until statChartViewPointList.size) {
-//
-////            path.lineTo(statChartViewPointList[i].point.x , statChartViewPointList[i].point.y)
-//
-////            path.addPath(
-////                getPolygonPath(
-////                    path,
-////                    statChartViewPointList[i].radius ,
-////                    pointsCount,
-////                    i,
-////                    centerX,
-////                    centerY
-////                )
-////            )
-//
-////            basePath.addPath(
-////                getPolygonPath(
-////                    basePath,
-////                    basePoint[i].radius,
-////                    pointsCount,
-////                    i,
-////                    centerX,
-////                    centerY
-////                )
-////            )
-//
-//            canvas.drawCircle(
-//                ( (statChartViewPointList[i].point.x )),
-//                ( (statChartViewPointList[i].point.y )),
-//                pointsRadius,
-//                circlePaint
-//            )
-//
-//        }
-//
-////        path.lineTo(
-////            startX ,
-////            startY
-////        )
-//
-//        basePath.lineTo(
-//            startX,
-//            startY
-//        )
-//
-//        path.close()
-//
-//        pathMeasure.setPath(path, true)
-//        canvas.drawPath(pathTest, pathPaint)
-//        canvas.drawPath(basePath, basePaint)
-
     }
 
     fun anim(list: List<StatData>) {
-//        statChartRenderer.setData(list)
-
         statDataList.clear()
         statDataList.addAll(list)
         doOnPreDraw {  statChartRenderer.setData(radius , list) }
-//        invalidate()
-
-//        initStatList(list)
-//        setAnimation()
-//        invalidate()
-    }
-
-    private fun initStatList(statList: List<StatData>) {
-        statChartViewPointList.clear()
-
-        val maxData: Double = statList.map { it.value }.max() ?: 100.0
-//        basePoint.clear()
-
-        pointsCount = statList.size
-
-
-        // 사용자가 입력하는 맥스값을 해야댐
-        // max 값 대비 반지름 값 구하기
-        statList.forEach {
-            statChartViewPointList.add(
-                StatChartViewPoints(radius = (radius * ((it.value) / maxData)).toFloat()))
-//            basePoint.add(StatChartViewPoints(radius = radius))
-        }
-
-
-        // 계산 어떻게 했는지 까먹엇네;; 한달전에 개발해서 그래........ ㅠㅠㅠㅠㅠㅠㅠ
-        // 위에 반지름 값을 구했으니 각도를 구한뒤 포인트 위치 값을 구한다.
-        for (i in 0 until statChartViewPointList.size) {
-
-            Log.e("Radius", " ${statChartViewPointList[i].radius} " )
-
-            val x = getCosX(centerX , statChartViewPointList[i].radius , degreeToRadians(getAngle(pointsCount) * i))
-            val y = getSinY(centerY , statChartViewPointList[i].radius , degreeToRadians(getAngle(pointsCount) * i))
-
-//            val baseX = getCosX(centerX , basePoint[i].radius , degreeToRadians(getAngle(pointsCount) * i))
-//            val baseY = getSinY(centerY , basePoint[i].radius , degreeToRadians(getAngle(pointsCount) * i))
-//
-            statChartViewPointList[i].point = PointF(x,y)
-//            basePoint[i].point = PointF(x,y)
-        }
-
-        invalidate()
-
-    }
-
-    private fun setAnimation() {
-
-        ValueAnimator.ofFloat(1f,  1f).apply {
-            duration = 1500
-            addUpdateListener {
-                Log.e("ValueAnimato111r", "  ${it.animatedValue}" )
-//                pathAnimateValue = it.animatedValue as Float
-            }
-            addListener(
-                onEnd = {
-                    isPathAnimateEnd = true
-                } ,
-                onStart =  {
-                    isPathAnimateEnd = false
-                }
-            )
-        }.start()
-
     }
 
     private fun getRadius(
@@ -347,7 +210,6 @@ class StatChartView @JvmOverloads constructor(
     }
 
     override fun drawLine( points: List<StatChartViewPoints> ) {
-        Log.e("TAG", "${points[0].radius}: " )
         canvas.drawPath(points.toPath() , pathPaint)
     }
 
