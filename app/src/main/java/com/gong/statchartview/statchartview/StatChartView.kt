@@ -87,17 +87,6 @@ class StatChartView @JvmOverloads constructor(
     }
 
     private val statChartViewPointList = mutableListOf<StatChartViewPoints>()
-//    private val basePoint = mutableListOf<StatChartViewPoints>()
-
-    private val statDataList = mutableListOf<StatData>()
-
-    private val pointF = PointF()
-    private val path = Path()
-    private val basePath = Path()
-    private val targetPath = Path()
-    private val pathMeasure = PathMeasure()
-    private var pathAnimateValue = 0f
-    private var isPathAnimateEnd = true
 
     lateinit var canvas: Canvas
 
@@ -156,17 +145,7 @@ class StatChartView @JvmOverloads constructor(
     }
 
     fun anim(list: List<StatData>) {
-        statDataList.clear()
-        statDataList.addAll(list)
         doOnPreDraw {  statChartRenderer.setData(radius , list) }
-    }
-
-    private fun getRadius(
-        touchX: Float ,
-        angle: Double
-    ): Float {
-        val radius = touchX / cos(angle).toFloat()
-        return radius
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
