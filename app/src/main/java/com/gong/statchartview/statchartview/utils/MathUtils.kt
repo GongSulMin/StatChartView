@@ -34,13 +34,13 @@ object MathUtils  {
 
     fun getPoint(radius: Float , angle: Double): PointF {
         val x = getCosX(
-            540.0f,
+            0f,
             radius,
             angle
         )
 
         val y = getSinY(
-            768.0f,
+            0f,
             radius,
             angle
         )

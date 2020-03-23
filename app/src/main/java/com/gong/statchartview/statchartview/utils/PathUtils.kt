@@ -26,10 +26,6 @@ object PathUtils  {
         val cosX =   getCosX(centerX , radius , startAngle)
         val sinY =  getSinY(centerY , radius , startAngle)
 
-        Log.e("angle", " ${angle}: " )
-        Log.e("anglesides", " ${sides} " )
-        Log.e("anglestartangle", "${startAngle}: ")
-
         path.lineTo(
             cosX ,
             sinY
@@ -43,10 +39,10 @@ object PathUtils  {
 fun List<StatChartViewPoints>.toPath(): Path {
     val path = Path()
 
-    path.moveTo(this.first().point.x , this.first().point.y)
+    path.moveTo(this.first().pointX , this.first().pointY)
 
     for (i in this.indices) {
-        path.lineTo(this[i].point.x , this[i].point.y)
+        path.lineTo(this[i].pointX , this[i].pointY)
     }
 
     path.close()

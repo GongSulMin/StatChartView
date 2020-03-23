@@ -129,7 +129,7 @@ class StatChartView @JvmOverloads constructor(
         centerY = 768.0F
 
         Log.e(TAG, "init" )
-        invalidate()
+//        invalidate()
 
     }
 
@@ -144,7 +144,7 @@ class StatChartView @JvmOverloads constructor(
         statChartRenderer.draw()
     }
 
-    fun anim(list: List<StatData>) {
+    fun showChart(list: List<StatData>) {
         doOnPreDraw {  statChartRenderer.setData(radius , list) }
     }
 

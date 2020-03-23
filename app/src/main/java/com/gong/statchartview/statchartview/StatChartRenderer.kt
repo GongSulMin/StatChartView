@@ -24,18 +24,15 @@ class StatChartRenderer (
     private var animatedValue = 1f
 
     fun draw() {
-
         chartView.drawLine(
             points.map {
                 StatChartViewPoints(
-                    PointF(540 + it.point.x * animatedValue , 760 + it.point.y * animatedValue) ,
+                    it.pointX * animatedValue + 540 ,
+                    it.pointY * animatedValue + 760 ,
                     it.radius * animatedValue
                 )
             }
         )
-
-
-
     }
 
     private fun pointReset(radius: Float , statDataList: List<StatData>){
@@ -46,18 +43,13 @@ class StatChartRenderer (
         radius: Float ,
         statDataList: List<StatData>
     ) {
-        Log.e("TAG", "invalidate before " )
-        Log.e("TAG", "invalidate after " )
-
         points.clear()
         points.addAll(statDataList.toPoint(radius))
 
         statChartAnimation.animate(
             action = { value ->
-                Log.e("TAG", "animtae   ${value}" )
                 animatedValue = value
                 chartView.invalidate()
-
             }
 
         )

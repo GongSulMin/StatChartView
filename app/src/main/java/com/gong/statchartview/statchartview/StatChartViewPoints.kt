@@ -4,7 +4,8 @@ import android.graphics.PointF
 import android.util.Log
 
 data class StatChartViewPoints(
-    var point: PointF = PointF(0f , 0f) ,
+    var pointX: Float = 0f ,
+    var pointY: Float = 0f ,
     var radius: Float = 300f
 ) {
 
@@ -13,8 +14,8 @@ data class StatChartViewPoints(
     }
 
     fun setPoint(x: Float , y: Float) {
-        point.x = x
-        point.y = y
+        this.pointX = x
+        this.pointY = y
     }
 
     fun rangeInPoint(
@@ -22,8 +23,8 @@ data class StatChartViewPoints(
         touchY: Float ,
         radius: Float
     ): Boolean{
-        return  touchX.contains((point.x - radius) ,(point.x + radius))
-                && touchY.contains((point.y - radius) ,(point.y + radius))
+        return  touchX.contains((pointX - radius) ,(pointX + radius))
+                && touchY.contains((pointY - radius) ,(pointY + radius))
     }
 
     private fun Float.contains(

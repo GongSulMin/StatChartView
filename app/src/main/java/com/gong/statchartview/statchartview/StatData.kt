@@ -48,7 +48,8 @@ fun List<StatData>.toPoint(maxRadius: Float): List<StatChartViewPoints> {
         val angle = MathUtils.degreeToRadians(MathUtils.getAngle(pointsCount) * index)
 
         StatChartViewPoints(
-            MathUtils.getPoint(radius , angle) ,
+            MathUtils.getCosX(0f, radius, angle),
+            MathUtils.getSinY(0f, radius, angle),
             radius
         )
     }
