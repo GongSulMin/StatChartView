@@ -1,27 +1,24 @@
 package com.gong.statchartview.statchartview
 
-import android.animation.ObjectAnimator
-import android.animation.ValueAnimator
 import android.content.Context
-import android.graphics.*
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Path
 import android.util.AttributeSet
-import android.util.Log
 import android.view.MotionEvent
 import android.widget.FrameLayout
-import androidx.core.animation.addListener
 import androidx.core.view.doOnPreDraw
 import com.gong.statchartview.R
 import com.gong.statchartview.statchartview.animation.StatChartAnimation
-import com.gong.statchartview.statchartview.utils.MathUtils.degreeToRadians
-import com.gong.statchartview.statchartview.utils.MathUtils.getAngle
-import com.gong.statchartview.statchartview.utils.MathUtils.getCosX
-import com.gong.statchartview.statchartview.utils.MathUtils.getSinY
-import com.gong.statchartview.statchartview.utils.PathUtils.getPolygonPath
+import com.gong.statchartview.statchartview.data.Line
+import com.gong.statchartview.statchartview.option.LineOption
+import com.gong.statchartview.statchartview.option.fromLineOption
 import com.gong.statchartview.statchartview.utils.toPath
-import javax.security.auth.login.LoginException
-import kotlin.math.cos
 
 /**
+ *
+ *                  가장 중요한거 Padding 구하기!!
  *
  *                   Needed Options
  *                   - pointCount
@@ -55,7 +52,7 @@ class StatChartView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
-) : FrameLayout(context, attrs, defStyleAttr) , ChartViewContract {
+) : FrameLayout(context, attrs, defStyleAttr), ChartViewContract {
 
     val TAG = "StatChartView"
 
@@ -67,12 +64,6 @@ class StatChartView @JvmOverloads constructor(
     private var centerX: Float = (width / 2).toFloat()
     private var centerY: Float = (height / 2).toFloat()
 
-    lateinit var statChartRenderer: StatChartRenderer
-
-    private val circlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.FILL
-        color = Color.GREEN
-    }
 
     private val pathPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         strokeWidth = 10F
@@ -80,33 +71,37 @@ class StatChartView @JvmOverloads constructor(
         color = Color.RED
     }
 
-    private val basePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        strokeWidth = 5f
-        style = Paint.Style.STROKE
-        color = Color.BLACK
-    }
-
     private val statChartViewPointList = mutableListOf<StatChartViewPoints>()
 
     lateinit var canvas: Canvas
+//    var pathMeasure = PathMeasure()
+
+    var statChartRenderer: Renderer
+    var baseChartRenderer: BaseStatChartRenderer
+    var isBaseChartShow: Boolean = true
 
     var animation = StatChartAnimation()
 
     init {
-        statChartRenderer = StatChartRenderer(
+        statChartRenderer = LinearStatChartRenderer(
             this,
             ChartConfig(
-                radius  ,
-                centerX ,
+                radius,
+                centerX,
                 centerY
-            ) ,
+            ),
             animation
         )
 
-        val obtainStyledAttributes = context.obtainStyledAttributes(attrs, R.styleable.StatChartView)
+        baseChartRenderer = BaseStatChartRenderer(
+            this
+        )
+
+        val obtainStyledAttributes =
+            context.obtainStyledAttributes(attrs, R.styleable.StatChartView)
 
         obtainStyledAttributes.let {
-            it.getInt(R.styleable.StatChartView_polygon_point_count , 5).let { count ->
+            it.getInt(R.styleable.StatChartView_polygon_point_count, 5).let { count ->
                 pointsCount = when {
                     count > 10 -> {
                         STAT_MAX_POINT
@@ -120,7 +115,7 @@ class StatChartView @JvmOverloads constructor(
                 }
             }
 
-            radius = it.getFloat(R.styleable.StatChartView_polygon_radius , 300f)
+            radius = it.getFloat(R.styleable.StatChartView_polygon_radius, 300f)
         }
 
         obtainStyledAttributes.recycle()
@@ -128,8 +123,7 @@ class StatChartView @JvmOverloads constructor(
         centerX = 540.0F
         centerY = 768.0F
 
-        Log.e(TAG, "init" )
-//        invalidate()
+//      t  invalidate()
 
     }
 
@@ -141,11 +135,17 @@ class StatChartView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         this.canvas = canvas
+        if (isBaseChartShow) baseChartRenderer.draw()
         statChartRenderer.draw()
     }
 
-    fun showChart(list: List<StatData>) {
-        doOnPreDraw {  statChartRenderer.setData(radius , list) }
+    fun showChart(list: List<Line>) {
+        doOnPreDraw { baseChartRenderer.dataLoad(radius, list) }
+        doOnPreDraw { statChartRenderer.dataLoad(radius, list) }
+    }
+
+    fun setBaseChart(isBaseChartShow: Boolean) {
+        this.isBaseChartShow = isBaseChartShow
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -153,13 +153,13 @@ class StatChartView @JvmOverloads constructor(
         val touchX = event.x
         val touchY = event.y
 
-        when(event.action) {
+        when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 statChartViewPointList.forEach { list ->
                     list.takeIf {
                         it.rangeInPoint(
-                            touchX ,
-                            touchY ,
+                            touchX,
+                            touchY,
                             pointsRadius
                         )
                     }?.let { selectPoint ->
@@ -167,8 +167,6 @@ class StatChartView @JvmOverloads constructor(
 
                     statChartViewPointList[0].radius = 150f
                     invalidate()
-
-
                 }
             }
 
@@ -182,15 +180,17 @@ class StatChartView @JvmOverloads constructor(
         return true
     }
 
-
     companion object {
         val STAT_MAX_POINT = 10
         val STAT_MIN_POINT = 3
     }
 
-    override fun drawLine( points: List<StatChartViewPoints> ) {
-        canvas.drawPath(points.toPath() , pathPaint)
+    override fun drawLine(points: List<StatChartViewPoints>, lineOption: LineOption) {
+        canvas.drawPath(points.toPath(), pathPaint.fromLineOption(lineOption))
     }
 
+    override fun drawLine(path: Path, lineOption: LineOption) {
+        canvas.drawPath(path, pathPaint.fromLineOption(lineOption))
+    }
 
 }
