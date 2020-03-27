@@ -4,7 +4,7 @@ import android.graphics.Color
 import android.graphics.Paint
 
 
-class PathOption(
+class LineOption(
     var pathColor: Int = Color.RED ,
     var pathWidth: Float = 10f
 ) {
@@ -34,13 +34,13 @@ class PathOption(
             return this
         }
 
-        fun build() = PathOption(this)
+        fun build() = LineOption(this)
     }
 }
 
-fun Paint.fromPathOption(pathOption: PathOption): Paint {
+fun Paint.fromLineOption(lineOption: LineOption): Paint {
     return this.apply {
-        color = pathOption.pathColor
-        strokeWidth = pathOption.pathWidth
+        color = lineOption.pathColor
+        strokeWidth = lineOption.pathWidth
     }
 }
