@@ -1,10 +1,7 @@
 package com.gong.statchartview.statchartview
 
-import android.graphics.PointF
-import android.util.Log
-import com.gong.statchartview.statchartview.animation.BaseAnimator
 import com.gong.statchartview.statchartview.animation.StatChartAnimation
-import com.gong.statchartview.statchartview.utils.MathUtils
+import com.gong.statchartview.statchartview.data.Line
 
 
 /**
@@ -14,37 +11,35 @@ import com.gong.statchartview.statchartview.utils.MathUtils
  *              뷰에다가 뿌릴 포인트를 계산한다라는 말이 맞을 듯 싶슴당
  *
  */
-class StatChartRenderer (
-    private val chartView: ChartViewContract ,
-    private val chartConfig: ChartConfig ,
+class StatChartRenderer(
+    private val chartView: ChartViewContract,
+    private val chartConfig: ChartConfig,
     private val statChartAnimation: StatChartAnimation
-) {
+) : Renderer {
 
-    private var points: MutableList<StatChartViewPoints> = mutableListOf()
+    private var lines: MutableList<Line> = mutableListOf()
+    private var maxStatValue = 100.0
     private var animatedValue = 1f
 
-    fun draw() {
-        chartView.drawLine(
-            points.map {
-                StatChartViewPoints(
-                    it.pointX * animatedValue + 540 ,
-                    it.pointY * animatedValue + 760 ,
-                    it.radius * animatedValue
-                )
-            }
-        )
+    override fun draw() {
+        lines.forEach {
+            chartView.drawLine(
+                it.statData.toPoint(this.maxStatValue, 300F).map { stat ->
+                    StatChartViewPoints(
+                        stat.pointX * animatedValue + 540,
+                        stat.pointY * animatedValue + 760,
+                        stat.radius * animatedValue
+                    )
+                },
+                it.lineOption
+            )
+        }
     }
 
-    private fun pointReset(radius: Float , statDataList: List<StatData>){
+    override fun dataLoad(radius: Float, list: List<Line>) {
 
-    }
-
-    fun setData(
-        radius: Float ,
-        statDataList: List<StatData>
-    ) {
-        points.clear()
-        points.addAll(statDataList.toPoint(radius))
+        this.lines = list.toMutableList()
+        this.maxStatValue = 100.0
 
         statChartAnimation.animate(
             action = { value ->
@@ -53,7 +48,6 @@ class StatChartRenderer (
             }
 
         )
-
     }
 }
 
