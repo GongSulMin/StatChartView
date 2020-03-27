@@ -1,9 +1,11 @@
 package com.gong.statchartview
 
+import android.graphics.Color
 import android.os.Bundle
-import android.transition.TransitionManager
 import androidx.appcompat.app.AppCompatActivity
 import com.gong.statchartview.statchartview.StatData
+import com.gong.statchartview.statchartview.data.Line
+import com.gong.statchartview.statchartview.option.LineOption
 import kotlinx.android.synthetic.main.activity_main.*
 
 /**
@@ -17,30 +19,74 @@ import kotlinx.android.synthetic.main.activity_main.*
  *                      Issue
  *                          - 여러개 path 값을 넣었을 때 에러가 나는게 아니라 디폴트 값을 넣도록 유도 하자 => 옵션으로 디폴트 값이 필요 없다면 에러 던지게
  *
+ *
+ *                       BaseOption
+ *                          Label Config
+ *                          BasePath 존재 유무
+ *                          BasePath 색깔
+ *
+ *                       Path 필요한거
+ *                          Path 색깔
+ *                          Path 데이터
+ *
+ *
  */
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        TransitionManager.beginDelayedTransition(parent_view)
-//        child_tv.visibility = View.VISIBLE
 
-        // 데이터를 좌표료 바꾸는게 있어야 한다.. ?
+        stat_chart_view.setBaseChart(true)
+        /**
+         *
+         *      이 부분을 이제 map으로?
+         */
 
-        stat_chart_view.anim(
+        val test1 = Line(
             listOf(
-                StatData.Builder.value(100.0).build(),
-                StatData.Builder.value(100.0).build(),
-                StatData.Builder.value(100.0).build(),
-                StatData.Builder.value(70.0).build(),
-                StatData.Builder.value(60.0).build(),
-                StatData.Builder.value(50.0).build()
-            )
+                StatData.Builder.value(generateNum()).build(),
+                StatData.Builder.value(generateNum()).build(),
+                StatData.Builder.value(generateNum()).build(),
+                StatData.Builder.value(generateNum()).build(),
+                StatData.Builder.value(generateNum()).build(),
+                StatData.Builder.value(generateNum()).build()
+            ),
+            LineOption
+                .build {
+                    setPathColor(Color.BLUE)
+                    setPathWidth(5f)
+                }
         )
-    }
 
-    override fun onStart() {
-        super.onStart()
+        val test2 = Line(
+            listOf(
+                StatData.Builder.value(generateNum()).build(),
+                StatData.Builder.value(generateNum()).build(),
+                StatData.Builder.value(generateNum()).build(),
+                StatData.Builder.value(generateNum()).build(),
+                StatData.Builder.value(generateNum()).build(),
+                StatData.Builder.value(generateNum()).build()
+            ),
+            LineOption
+                .build {
+                    setPathColor(Color.RED)
+                    setPathWidth(5f)
+                }
+        )
+
+        val data = mutableListOf<Line>()
+
+        data.add(test1)
+        data.add(test2)
+
+        stat_chart_view.showChart(
+            data
+        )
 
     }
 }
+
+fun generateNum(): Double {
+    return (0..100).random().toDouble()
+}
+
