@@ -5,6 +5,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
+import android.text.StaticLayout
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.widget.FrameLayout
@@ -78,12 +79,13 @@ class StatChartView @JvmOverloads constructor(
 
     var statChartRenderer: Renderer
     var baseChartRenderer: BaseStatChartRenderer
-    var isBaseChartShow: Boolean = true
-
     var animation = StatChartAnimation()
 
+    var isVisibleBaseChartShow: Boolean = true
+    val baseTextList = mutableListOf<String>()
+
     init {
-        statChartRenderer = LinearStatChartRenderer(
+        statChartRenderer = PointStatChartRenderer(
             this,
             ChartConfig(
                 radius,
@@ -135,17 +137,30 @@ class StatChartView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         this.canvas = canvas
-        if (isBaseChartShow) baseChartRenderer.draw()
+        if (isVisibleBaseChartShow) baseChartRenderer.draw()
+        baseChartRenderer.showText()
         statChartRenderer.draw()
     }
 
     fun showChart(list: List<Line>) {
-        doOnPreDraw { baseChartRenderer.dataLoad(radius, list) }
+
+        doOnPreDraw {
+            baseChartRenderer.dataLoad(radius, list)
+        }
+
         doOnPreDraw { statChartRenderer.dataLoad(radius, list) }
+
+
     }
 
     fun setBaseChart(isBaseChartShow: Boolean) {
-        this.isBaseChartShow = isBaseChartShow
+        this.isVisibleBaseChartShow = isBaseChartShow
+    }
+
+    fun setBaseLinePointText(texts: List<String>) {
+        baseTextList.clear()
+        baseTextList.addAll(texts)
+        baseChartRenderer.setText(texts)
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -180,11 +195,6 @@ class StatChartView @JvmOverloads constructor(
         return true
     }
 
-    companion object {
-        val STAT_MAX_POINT = 10
-        val STAT_MIN_POINT = 3
-    }
-
     override fun drawLine(points: List<StatChartViewPoints>, lineOption: LineOption) {
         canvas.drawPath(points.toPath(), pathPaint.fromLineOption(lineOption))
     }
@@ -192,5 +202,39 @@ class StatChartView @JvmOverloads constructor(
     override fun drawLine(path: Path, lineOption: LineOption) {
         canvas.drawPath(path, pathPaint.fromLineOption(lineOption))
     }
+
+    override fun drawText(
+        staticLayout: StaticLayout,
+        pointX: Float,
+        pointY: Float
+    ) {
+        canvas.save()
+        canvas.translate(pointX, pointY)
+        staticLayout.draw(canvas)
+        canvas.restore()
+    }
+
+    companion object {
+        val STAT_MAX_POINT = 10
+        val STAT_MIN_POINT = 3
+    }
+
+
+    class Builder {
+        private var texts: List<String>? = null
+        private var isVisibleBaseChartShow: Boolean = false
+
+        fun setBaseTexts(texts: List<String>): Builder {
+            this.texts = texts
+            return this
+        }
+
+        fun setVisibleBaseChart(isVisible: Boolean): Builder {
+            this.isVisibleBaseChartShow = isVisible
+            return this
+        }
+
+    }
+
 
 }
