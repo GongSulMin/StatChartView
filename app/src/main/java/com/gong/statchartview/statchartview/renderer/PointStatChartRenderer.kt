@@ -1,9 +1,12 @@
-package com.gong.statchartview.statchartview
+package com.gong.statchartview.statchartview.renderer
 
 import android.graphics.Path
 import android.graphics.PathMeasure
+import com.gong.statchartview.statchartview.ChartViewContract
+import com.gong.statchartview.statchartview.StatChartViewPoints
 import com.gong.statchartview.statchartview.animation.StatChartAnimation
 import com.gong.statchartview.statchartview.data.Line
+import com.gong.statchartview.statchartview.toPoint
 import com.gong.statchartview.statchartview.utils.toPath
 
 
@@ -18,8 +21,7 @@ import com.gong.statchartview.statchartview.utils.toPath
  */
 class PointStatChartRenderer(
     private val chartView: ChartViewContract,
-    private val chartConfig: ChartConfig,
-    private val statChartAnimation: StatChartAnimation
+    private var statChartAnimation: StatChartAnimation
 ) : Renderer {
 
     private var lines: MutableList<Line> = mutableListOf()
@@ -31,8 +33,8 @@ class PointStatChartRenderer(
     override fun draw() {
 
         if (pathMeasures.isEmpty()) {
-            lines.forEachIndexed { index, it ->
-                val path = it.statData.toPoint(100.0, 300f)
+            lines.forEach { line ->
+                val path = line.statData.toPoint(100.0, 300f)
                     .map { stat ->
                         StatChartViewPoints(
                             stat.pointX + 540,
@@ -63,15 +65,19 @@ class PointStatChartRenderer(
         }
     }
 
-    override fun dataLoad(radius: Float, list: List<Line>) {
-        this.lines = list.toMutableList()
+    override fun anim(
+        radius: Float,
+        lines: List<Line>,
+        animation: StatChartAnimation
+    ) {
+        this.lines = lines.toMutableList()
         this.maxStatValue = 100.0
+        this.statChartAnimation = animation
 
-        statChartAnimation.animate {
+        animation.animate {
             animateVar = it
             viewInvalidate()
         }
-
     }
 
     private fun viewInvalidate() {

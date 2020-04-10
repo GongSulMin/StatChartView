@@ -1,7 +1,10 @@
-package com.gong.statchartview.statchartview
+package com.gong.statchartview.statchartview.renderer
 
+import com.gong.statchartview.statchartview.ChartViewContract
+import com.gong.statchartview.statchartview.StatChartViewPoints
 import com.gong.statchartview.statchartview.animation.StatChartAnimation
 import com.gong.statchartview.statchartview.data.Line
+import com.gong.statchartview.statchartview.toPoint
 
 
 /**
@@ -11,10 +14,9 @@ import com.gong.statchartview.statchartview.data.Line
  *              뷰에다가 뿌릴 포인트를 계산한다라는 말이 맞을 듯 싶슴당
  *
  */
-class StatChartRenderer(
+class ScaleStatChartRenderer(
     private val chartView: ChartViewContract,
-    private val chartConfig: ChartConfig,
-    private val statChartAnimation: StatChartAnimation
+    private var statChartAnimation: StatChartAnimation
 ) : Renderer {
 
     private var lines: MutableList<Line> = mutableListOf()
@@ -36,10 +38,11 @@ class StatChartRenderer(
         }
     }
 
-    override fun dataLoad(radius: Float, list: List<Line>) {
+    override fun anim(radius: Float, lines: List<Line>, animation: StatChartAnimation) {
 
-        this.lines = list.toMutableList()
+        this.lines = lines.toMutableList()
         this.maxStatValue = 100.0
+        this.statChartAnimation = animation
 
         statChartAnimation.animate(
             action = { value ->
