@@ -3,7 +3,9 @@ package com.gong.statchartview
 import android.graphics.Color
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.gong.statchartview.statchartview.StatChartView
 import com.gong.statchartview.statchartview.StatData
+import com.gong.statchartview.statchartview.animation.AnimationType
 import com.gong.statchartview.statchartview.data.Line
 import com.gong.statchartview.statchartview.option.LineOption
 import kotlinx.android.synthetic.main.activity_main.*
@@ -32,15 +34,27 @@ import kotlinx.android.synthetic.main.activity_main.*
  *
  */
 class MainActivity : AppCompatActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        stat_chart_view.setBaseChart(true)
-        /**
-         *
-         *      이 부분을 이제 map으로?
-         */
+        stat_chart_view.option =
+            StatChartView.ChartViewOption.Builder()
+                .setAnimationDuration(3000L)
+                .setBaseLineOption(
+                    LineOption
+                        .build {
+                            setPathColor("#B0BEC5")
+                            setPathWidth(3F)
+                        }
+                )
+                .setBaseChartShowStatus(true)
+                .setAnimationType(AnimationType.SCALE_ANIMATION)
+                .build()
+
+        stat_chart_view.setBaseLinePointText(listOf("지능", "파워", "체력", "민첩", "운", "몰라"))
+
 
         val test1 = Line(
             listOf(
@@ -87,6 +101,6 @@ class MainActivity : AppCompatActivity() {
 }
 
 fun generateNum(): Double {
-    return (0..100).random().toDouble()
+    return (50..100).random().toDouble()
 }
 
