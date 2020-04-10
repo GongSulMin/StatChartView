@@ -11,10 +11,14 @@ import android.view.MotionEvent
 import android.widget.FrameLayout
 import androidx.core.view.doOnPreDraw
 import com.gong.statchartview.R
+import com.gong.statchartview.statchartview.animation.AnimationType
 import com.gong.statchartview.statchartview.animation.StatChartAnimation
 import com.gong.statchartview.statchartview.data.Line
 import com.gong.statchartview.statchartview.option.LineOption
 import com.gong.statchartview.statchartview.option.fromLineOption
+import com.gong.statchartview.statchartview.renderer.NoAnimRenderer
+import com.gong.statchartview.statchartview.renderer.Renderer
+import com.gong.statchartview.statchartview.renderer.RendererFactory
 import com.gong.statchartview.statchartview.utils.toPath
 
 /**
@@ -57,15 +61,6 @@ class StatChartView @JvmOverloads constructor(
 
     val TAG = "StatChartView"
 
-    var pointsCount: Int = 0
-
-    private var radius: Float = 300f
-    private val pointsRadius: Float = 13f
-
-    private var centerX: Float = (width / 2).toFloat()
-    private var centerY: Float = (height / 2).toFloat()
-
-
     private val pathPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         strokeWidth = 10F
         style = Paint.Style.STROKE
@@ -74,29 +69,41 @@ class StatChartView @JvmOverloads constructor(
 
     private val statChartViewPointList = mutableListOf<StatChartViewPoints>()
 
-    lateinit var canvas: Canvas
-//    var pathMeasure = PathMeasure()
+    // TODO 여기 수정 해야됨... 어떻게 바꿔야지 잘 바꾼거지 일단 지금 팩토리 클래스자체가 싱글톤 형태로 유지해도 가능하게 할 수 있을거같은데??
+    var option: ChartViewOption = ChartViewOption(IS_VISIBLE_BASE_CHART, ANIMATION_DURATION)
+        set(value) {
+            field = value
+            animations = StatChartAnimation(option.animationDuration)
+            statChartRenderer = RendererFactory(this, option.animationType, animations).create()
+            baseChartRenderer = BaseStatChartRenderer(
+                this,
+                field.baseLineOption
+            )
+        }
 
-    var statChartRenderer: Renderer
-    var baseChartRenderer: BaseStatChartRenderer
-    var animation = StatChartAnimation()
-
-    var isVisibleBaseChartShow: Boolean = true
-    val baseTextList = mutableListOf<String>()
+    private lateinit var canvas: Canvas
+    private var pointsCount: Int = 0
+    private var radius: Float = 300f
+    private var centerX: Float = (width / 2).toFloat()
+    private var centerY: Float = (height / 2).toFloat()
+    private var statChartRenderer: Renderer
+    private var baseChartRenderer: BaseStatChartRenderer
+    private var animations = StatChartAnimation(option.animationDuration)
+    private val pointsRadius: Float = 13f
+    private val baseTextList = mutableListOf<String>()
 
     init {
-        statChartRenderer = PointStatChartRenderer(
-            this,
-            ChartConfig(
-                radius,
-                centerX,
-                centerY
-            ),
-            animation
-        )
+
+        statChartRenderer =
+            NoAnimRenderer(
+                this,
+                animations
+            )
+
 
         baseChartRenderer = BaseStatChartRenderer(
-            this
+            this,
+            option.baseLineOption
         )
 
         val obtainStyledAttributes =
@@ -125,8 +132,6 @@ class StatChartView @JvmOverloads constructor(
         centerX = 540.0F
         centerY = 768.0F
 
-//      t  invalidate()
-
     }
 
     override fun onAttachedToWindow() {
@@ -137,7 +142,7 @@ class StatChartView @JvmOverloads constructor(
 
     override fun onDraw(canvas: Canvas) {
         this.canvas = canvas
-        if (isVisibleBaseChartShow) baseChartRenderer.draw()
+        if (option.isVisibleBaseChartShow) baseChartRenderer.draw()
         baseChartRenderer.showText()
         statChartRenderer.draw()
     }
@@ -145,16 +150,12 @@ class StatChartView @JvmOverloads constructor(
     fun showChart(list: List<Line>) {
 
         doOnPreDraw {
-            baseChartRenderer.dataLoad(radius, list)
+            baseChartRenderer.anim(radius, list, animations)
         }
 
-        doOnPreDraw { statChartRenderer.dataLoad(radius, list) }
-
-
-    }
-
-    fun setBaseChart(isBaseChartShow: Boolean) {
-        this.isVisibleBaseChartShow = isBaseChartShow
+        doOnPreDraw {
+            statChartRenderer.anim(radius, list, animations)
+        }
     }
 
     fun setBaseLinePointText(texts: List<String>) {
@@ -215,26 +216,63 @@ class StatChartView @JvmOverloads constructor(
     }
 
     companion object {
-        val STAT_MAX_POINT = 10
-        val STAT_MIN_POINT = 3
+        const val STAT_MAX_POINT = 10
+        const val STAT_MIN_POINT = 3
+        const val ANIMATION_DURATION = 1500L
+        const val IS_VISIBLE_BASE_CHART = true
     }
 
+    class ChartViewOption {
 
-    class Builder {
-        private var texts: List<String>? = null
-        private var isVisibleBaseChartShow: Boolean = false
+        var isVisibleBaseChartShow: Boolean
+        var animationDuration: Long
+        var animationType: AnimationType = AnimationType.NO_ANIMATION
+        var baseLineOption: LineOption =
+            LineOption.Builder.setPathColor("#B0BEC5").setPathWidth(5f).build()
 
-        fun setBaseTexts(texts: List<String>): Builder {
-            this.texts = texts
-            return this
-        }
-
-        fun setVisibleBaseChart(isVisible: Boolean): Builder {
+        constructor(isVisible: Boolean, duration: Long) {
             this.isVisibleBaseChartShow = isVisible
-            return this
+            this.animationDuration = duration
         }
 
-    }
+        private constructor(builder: Builder) {
+            this.isVisibleBaseChartShow = builder.isVisibleBaseChartShow
+            this.animationDuration = builder.animationDuration
+            this.animationType = builder.animationType
+            this.baseLineOption = builder.baseLineOption
+        }
 
+        class Builder {
+            var isVisibleBaseChartShow: Boolean = true
+            var animationDuration: Long = 1500
+            var animationType: AnimationType = AnimationType.NO_ANIMATION
+            var baseLineOption: LineOption =
+                LineOption.Builder.setPathColor("#B0BEC5").setPathWidth(5f).build()
+
+            fun setBaseChartShowStatus(value: Boolean): Builder {
+                this.isVisibleBaseChartShow = value
+                return this
+            }
+
+            fun setBaseLineOption(value: LineOption): Builder {
+                this.baseLineOption = value
+                return this
+            }
+
+            fun setAnimationDuration(duration: Long): Builder {
+                this.animationDuration = duration
+                return this
+            }
+
+            fun setAnimationType(animationType: AnimationType): Builder {
+                this.animationType = animationType
+                return this
+            }
+
+            fun build(): ChartViewOption {
+                return ChartViewOption(this)
+            }
+        }
+    }
 
 }
