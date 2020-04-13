@@ -38,7 +38,12 @@ class ScaleStatChartRenderer(
         }
     }
 
-    override fun anim(radius: Float, lines: List<Line>, animation: StatChartAnimation) {
+    override fun anim(
+        radius: Float,
+        lines: List<Line>,
+        animation: StatChartAnimation,
+        animationDuration: Long
+    ) {
 
         this.lines = lines.toMutableList()
         this.maxStatValue = 100.0
@@ -48,8 +53,8 @@ class ScaleStatChartRenderer(
             action = { value ->
                 animatedValue = value
                 chartView.invalidate()
-            }
-
+            },
+            animationDuration = animationDuration
         )
     }
 }

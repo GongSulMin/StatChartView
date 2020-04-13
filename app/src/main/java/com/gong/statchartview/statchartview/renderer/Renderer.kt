@@ -5,5 +5,10 @@ import com.gong.statchartview.statchartview.data.Line
 
 interface Renderer {
     fun draw()
-    fun anim(radius: Float, lines: List<Line>, animation: StatChartAnimation)
+    fun anim(
+        radius: Float,
+        lines: List<Line>,
+        animation: StatChartAnimation,
+        animationDuration: Long
+    )
 }

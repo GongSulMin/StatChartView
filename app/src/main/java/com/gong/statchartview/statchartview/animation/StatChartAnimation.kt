@@ -4,15 +4,14 @@ import android.animation.ValueAnimator
 import androidx.core.animation.addListener
 import com.gong.statchartview.statchartview.StatChartViewPoints
 
-class StatChartAnimation(
-    var animationDuration: Long
-) {
+class StatChartAnimation {
 
     fun animate(
         onStart: (() -> Unit) = {},
         onEnd: (() -> Unit) = {},
         data: List<StatChartViewPoints> = listOf(),
-        action: (Float) -> Unit
+        action: (Float) -> Unit,
+        animationDuration: Long
     ) {
 
         ValueAnimator.ofFloat(0f, 1f).apply {

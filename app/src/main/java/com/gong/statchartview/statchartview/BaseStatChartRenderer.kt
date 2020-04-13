@@ -21,7 +21,8 @@ class BaseStatChartRenderer(
     override fun anim(
         radius: Float,
         lines: List<Line>,
-        animation: StatChartAnimation
+        animation: StatChartAnimation,
+        animationDuration: Long
     ) {
 
         val list = mutableListOf<StatData>()
