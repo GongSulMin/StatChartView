@@ -70,10 +70,14 @@ class StatChartView @JvmOverloads constructor(
     private val statChartViewPointList = mutableListOf<StatChartViewPoints>()
 
     // TODO 여기 수정 해야됨... 어떻게 바꿔야지 잘 바꾼거지 일단 지금 팩토리 클래스자체가 싱글톤 형태로 유지해도 가능하게 할 수 있을거같은데??
-    var option: ChartViewOption = ChartViewOption(IS_VISIBLE_BASE_CHART, ANIMATION_DURATION)
+    var option: ChartViewOption = ChartViewOption(
+        IS_VISIBLE_BASE_CHART,
+        ANIMATION_DURATION,
+        AnimationType.NO_ANIMATION,
+        LineOption.Builder.setPathColor("#B0BEC5").setPathWidth(5f).build()
+    )
         set(value) {
             field = value
-            animations = StatChartAnimation(option.animationDuration)
             statChartRenderer = RendererFactory(this, option.animationType, animations).create()
             baseChartRenderer = BaseStatChartRenderer(
                 this,
@@ -88,7 +92,7 @@ class StatChartView @JvmOverloads constructor(
     private var centerY: Float = (height / 2).toFloat()
     private var statChartRenderer: Renderer
     private var baseChartRenderer: BaseStatChartRenderer
-    private var animations = StatChartAnimation(option.animationDuration)
+    private var animations = StatChartAnimation()
     private val pointsRadius: Float = 13f
     private val baseTextList = mutableListOf<String>()
 
@@ -150,11 +154,21 @@ class StatChartView @JvmOverloads constructor(
     fun showChart(list: List<Line>) {
 
         doOnPreDraw {
-            baseChartRenderer.anim(radius, list, animations)
+            baseChartRenderer.anim(
+                radius,
+                list,
+                animations,
+                option.animationDuration
+            )
         }
 
         doOnPreDraw {
-            statChartRenderer.anim(radius, list, animations)
+            statChartRenderer.anim(
+                radius,
+                list,
+                animations,
+                option.animationDuration
+            )
         }
     }
 
@@ -222,51 +236,80 @@ class StatChartView @JvmOverloads constructor(
         const val IS_VISIBLE_BASE_CHART = true
     }
 
-    class ChartViewOption {
 
-        var isVisibleBaseChartShow: Boolean
-        var animationDuration: Long
+    // 결국 1. 디폴트 밸류를 두개다 가지거나
+    //     2. nullable 하거나 ??
+    /**
+     *
+     *      https://medium.com/@vicidroiddev/using-builders-in-kotlin-data-class-e8a08797ed56
+     */
+    class ChartViewOption {
+        var isVisibleBaseChartShow: Boolean = IS_VISIBLE_BASE_CHART
+        var animationDuration: Long = ANIMATION_DURATION
         var animationType: AnimationType = AnimationType.NO_ANIMATION
         var baseLineOption: LineOption =
             LineOption.Builder.setPathColor("#B0BEC5").setPathWidth(5f).build()
 
-        constructor(isVisible: Boolean, duration: Long) {
+        constructor(
+            isVisible: Boolean,
+            duration: Long,
+            animationType: AnimationType,
+            lineOption: LineOption
+        ) {
             this.isVisibleBaseChartShow = isVisible
             this.animationDuration = duration
+            this.animationType = animationType
+            this.baseLineOption = lineOption
         }
 
         private constructor(builder: Builder) {
-            this.isVisibleBaseChartShow = builder.isVisibleBaseChartShow
-            this.animationDuration = builder.animationDuration
-            this.animationType = builder.animationType
-            this.baseLineOption = builder.baseLineOption
+            with(builder) {
+                isVisibleBaseChartShow?.let {
+                    this@ChartViewOption.isVisibleBaseChartShow = it
+                }
+
+                animationDuration?.let {
+                    this@ChartViewOption.animationDuration = it
+                }
+
+                animationType?.let {
+                    this@ChartViewOption.animationType = it
+                }
+
+                baseLineOption?.let {
+                    this@ChartViewOption.baseLineOption = it
+                }
+            }
         }
 
         class Builder {
-            var isVisibleBaseChartShow: Boolean = true
-            var animationDuration: Long = 1500
-            var animationType: AnimationType = AnimationType.NO_ANIMATION
-            var baseLineOption: LineOption =
-                LineOption.Builder.setPathColor("#B0BEC5").setPathWidth(5f).build()
+            var isVisibleBaseChartShow: Boolean? = null
+            var animationDuration: Long? = null
+            var animationType: AnimationType? = null
+            var baseLineOption: LineOption? = null
 
             fun setBaseChartShowStatus(value: Boolean): Builder {
-                this.isVisibleBaseChartShow = value
-                return this
+                return apply {
+                    this.isVisibleBaseChartShow = value
+                }
             }
 
             fun setBaseLineOption(value: LineOption): Builder {
-                this.baseLineOption = value
-                return this
+                return apply {
+                    this.baseLineOption = value
+                }
             }
 
             fun setAnimationDuration(duration: Long): Builder {
-                this.animationDuration = duration
-                return this
+                return apply {
+                    this.animationDuration = duration
+                }
             }
 
             fun setAnimationType(animationType: AnimationType): Builder {
-                this.animationType = animationType
-                return this
+                return apply {
+                    this.animationType = animationType
+                }
             }
 
             fun build(): ChartViewOption {
