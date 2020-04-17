@@ -70,12 +70,7 @@ class StatChartView @JvmOverloads constructor(
     private val statChartViewPointList = mutableListOf<StatChartViewPoints>()
 
     // TODO 여기 수정 해야됨... 어떻게 바꿔야지 잘 바꾼거지 일단 지금 팩토리 클래스자체가 싱글톤 형태로 유지해도 가능하게 할 수 있을거같은데??
-    var option: ChartViewOption = ChartViewOption(
-        IS_VISIBLE_BASE_CHART,
-        ANIMATION_DURATION,
-        AnimationType.NO_ANIMATION,
-        LineOption.Builder.setPathColor("#B0BEC5").setPathWidth(5f).build()
-    )
+    var option: ChartViewOption = ChartViewOption()
         set(value) {
             field = value
             statChartRenderer = RendererFactory(this, option.animationType, animations).create()
@@ -103,7 +98,6 @@ class StatChartView @JvmOverloads constructor(
                 this,
                 animations
             )
-
 
         baseChartRenderer = BaseStatChartRenderer(
             this,
@@ -244,11 +238,14 @@ class StatChartView @JvmOverloads constructor(
      *      https://medium.com/@vicidroiddev/using-builders-in-kotlin-data-class-e8a08797ed56
      */
     class ChartViewOption {
+
         var isVisibleBaseChartShow: Boolean = IS_VISIBLE_BASE_CHART
         var animationDuration: Long = ANIMATION_DURATION
         var animationType: AnimationType = AnimationType.NO_ANIMATION
         var baseLineOption: LineOption =
             LineOption.Builder.setPathColor("#B0BEC5").setPathWidth(5f).build()
+
+        constructor()
 
         constructor(
             isVisible: Boolean,
