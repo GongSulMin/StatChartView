@@ -1,4 +1,4 @@
 # StatChartView
 
 ### NoAnimRender
-<img src="/gif/NoAnimRender.gif" witdh="30%"/>
+<img src="/gif/NoAnimRender.gif" width="30%"/>
